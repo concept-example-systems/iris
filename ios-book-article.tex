@@ -1,0 +1,477 @@
+\documentclass{IOS-Book-Article}
+
+\usepackage{mathptmx}
+
+\usepackage{url}
+%\normalfont
+%\usepackage[T1]{fontenc}
+%\usepackage[mtplusscr,mtbold]{mathtime}
+%
+\begin{document}
+\begin{frontmatter}              % The preamble begins here.
+
+%\pretitle{Pretitle}
+\title{Giving examples instead of answering questions: the idea of a legal concept examples system}
+\runningtitle{The idea of a legal concept examples system}
+%\subtitle{Subtitle}
+
+\author[A]{\fnms{Book Production} \snm{Manager}%
+\thanks{Corresponding Author: Book Production Manager, IOS Press, Nieuwe Hemweg 6B,
+1013 BG Amsterdam, The Netherlands; E-mail:
+bookproduction@iospress.nl.}},
+\author[B]{\fnms{Second} \snm{Author}}
+and
+\author[B]{\fnms{Third} \snm{Author}}
+
+\runningauthor{B.P. Manager et al.}
+\address[A]{Book Production Department, IOS Press, The Netherlands}
+\address[B]{Short Affiliation of Second Author and Third Author}
+
+\begin{abstract}
+
+\end{abstract}
+
+\begin{keyword}
+electronic camera-ready manuscript\sep IOS Press\sep
+\LaTeX\sep book\sep layout
+\end{keyword}
+\end{frontmatter}
+
+\thispagestyle{empty}
+\pagestyle{empty}
+
+\section{Introduction}
+
+Draft: T
+
+Main source: A practical Guide to Legal Research - Kelly and Sanderson
+
+Steps of legal research (which is an iterative process:
+1. identification of the relevant facts;
+2. identification of the legal issues;
+3. identification and interpretation of the rules that govern the legal issues;
+4. application of the rules to the facts; and
+5. conclusion/s.
+
+Alban and Salim case
+
+Step 1:
+
+Are Aban and Salim refugees? What does the term refugee mean?
+Is persecution relevant to refugee status? If so, how?
+Can Aban and Salim be persecuted because they are homosexual?
+Does the law of Australia or Pakistan apply?
+Is there relevant international law?
+
+Distilling the facts: Refugee; Persecution; Homosexual
+
+Step 2:
+
+Requires (among 7 steps)
+• the early identification of relevant search terms;
+• an understanding of search syntax (how to employ your search terms);
+
+Step 4:
+
+Legal reasoning
+Most often reasoning by analogy: where we treat like cases alike, in that we look to facts, issues, precedent, principles and policy adopted in a case to see if we can predict the outcome of the issue confronting us, relative to earlier precedent. Thus, using reasoning by analogy we might compare differences and distinguish a case.
+
+Also inductive and deductive reasonings are used
+
+Step 5: conclusion
+
+The main goal of step 2 is to produce search terms. Together with their synonyms, they serve for the first iteration of legal research.
+
+An additional step is to define the search terms using secondary sources such as dictionaries and possibly obtain further keywords.
+
+For the example, the additional term "well-founded fear of persecution" can be obtained
+
+Build a search term, such as [“well-founded fear of persecution” and (gay or homosex!)]
+
+Step 3: legislation
+We then find the most relevant legislation and most recent version that deals with our legal issue. We also look for referenced legislation, etc. Normally, legislation is accessible and searchable via public databases. In addition, the best way to find the relevant legislation is via secondary sources like legal encyclopedia.
+
+Step 3: case law
+In a common law system, case law is central to
+understanding, interpreting and applying the law.
+
+From the legislation, we have questions such as:
+- what is a well-founded fear of persecution?
+- is homosexuality a ‘social group’ for the purposes of the Migration Act 1958?
+
+\section{Legal Concept Example Systems (LCESs)}
+
+TODO: T
+
+\section{State of the Art}
+\label{sec:sota}
+
+TODO: A
+
+\section{Methodology}
+
+As it was discussed in Section \ref{sec:sota} there are two dominant approaches 
+based on neural networks that are used to solve the problem of QA:
+\begin{enumerate}
+  \item retrieve and extract/generate answer, e.g. \cite{}, %RAG
+  \item generate an answer using a large language model (LLM) \cite{}. %GPT-3
+\end{enumerate}
+Our approach -- LCES -- differs from them, since:
+\begin{enumerate}
+  \item we do not require that the user poses a question to the system, since the system might generate a question for the user,
+    taking into account the legislation,
+  \item we do not answer the question, but give positive and negative examples, taken directly from the relevant court decisions.
+\end{enumerate}
+Our approach is most similar to the retrieve and generate paradigm, since when searching for relevant information we use
+a cross-encoder (typically used to re-score the results of a sparse or a dense retriever). Yet we also introduce an important
+difference in that respect, by taking individual sentences as the primary means for bearing atomic pieces of information.  
+As a result we resolve the problem of hallucination present in the second mentioned approach, i.e. the approach based on LLMs.
+
+The procedure of finding the relevant examples is divided into the following steps:
+\begin{enumerate}
+  \item Given a legal concept, generate a question that asks if the concept was applicable in a given context,
+    using a first-order language\footnote{The first-order language is used in the Tarski's sense -- to differentiate
+    between the first-order language and the meta-language that is used to speak about the first-order language. In this 
+    context it means that the questions contains the legal concept as a normal lexical unit, rather than a quoted phrase.
+    For example, for the concept \textit{data subject rights} a question in first-order language would be 
+      ,,Were the data subjects informed about their rights regarding their personal data?'', vs. 
+      a meta-language level question ,,Does the passage contain a $\ll$data subject rights$\gg$ phrase?''.}.
+    For example, the term \textit{legally binding and enforceable instrument} generates the following question:
+    \textit{Does the instrument in question meet the criteria for being legally binding under relevant laws?}
+  \item Having the question generated, we use a binary classification model to find sentences in the court cases that answer the question. 
+    We use the predicted probability not only to sort these sentences, but also to filter sentences below a defined threshold.
+    As a result this step might generate an empty set, meaning that in our corpus there are no relevant court decisions. 
+    This prevents the system from presenting passages that are irrelevant, but also limits the possibility of false
+    classification of the sentences.
+  \item In the last step we extend the sentence to include the preceding and the following sentence forming a three-sentence passage
+    and ask an instruction-following model to judge if the example gives a positive or a negative answer to the generated question.
+    We use that prediction to classify the passage as a positive or a negative example.
+\end{enumerate}
+
+It has to be stressed that none of the steps uses a domain-specific (legal) question-answering dataset. We only use an open-domain
+dataset (SQuAD) and general generative models (ChatGPT and Flan-T5). This is a very important feature of our approach,
+since the oder neural systems related to legal question answering are typically trained on legal datasets.
+The detailed description of the procedure is given in the following sections.
+
+\subsection{Question generation}
+
+\textit{Tomer: provide the rationale for the concept selection and the prompt for ChatGPT used to generate the questions.}
+
+We use ChatGPT to generate the questions using the legal concepts as the input. For each legal concept we have generated
+4 specific and 1 general question. In general the number of questions is a parameter of the approach and a higher number
+should yield a better recall of the results. So far we have left the influence of that parameter on the result as well
+as a selection of particular language model for future research.
+
+Since we test our approach on GDPR, we assume that ChatGPT has a good knowledge
+of the relevant legislation, since it should be present in the corpus, the
+system was trained on. As the results show (cf. Table
+\ref{tab:question-examples}), this is a valid assumption, however for a solution
+that is independent from the knowledge of the language model (i.e. taking into
+account some amendments that were applied recently), we could provide the
+relevant provision as a part of the prompt.
+
+\begin{table}[htbp]
+  \centering\begin{tabular}{l p{6cm}}
+    \hline
+    \textbf{Legal concept} & \textbf{Generated question} \\
+    \hline
+Enforceable data subject rights & Were the data subjects informed about their rights regarding their personal data?\\
+\hline
+Effective legal remedies for data subjects & Are there established procedures within the organization for data subjects to seek legal remedies?\\
+\hline
+Legally binding and enforceable instrument & Does the instrument in question meet the criteria for being legally binding under relevant laws?\\
+\hline
+Binding corporate rules & Does the organization have binding corporate rules in place for data protection?\\
+\hline
+Standard data protection clauses & Has the organization implemented Standard Contractual Clauses (SCCs) for data transfers?\\
+\hline
+Approved code of conduct & Has the organization's code of conduct been officially approved by the relevant authority?\\
+\hline
+Approved certification mechanism & Has the organization's certification mechanism been officially approved by the relevant authority?\\
+\hline
+Competent supervisory authority & Has the organization received approvals or guidance from the competent supervisory authority for its data protection practices?\\
+\hline
+Contractual clauses & Does the organization incorporate specific data protection clauses in its contracts with third parties?\\
+\hline
+Administrative arrangements & Does the organization have administrative arrangements in place that include provisions for data subject rights?\\
+\hline
+Consistency mechanism & Does the organization employ a consistency mechanism to ensure uniform data protection practices?\\
+\hline
+
+  \end{tabular}
+  \caption{Example questions generated by ChatGPT for the legal concepts taken from GDPR.}
+  \label{tab:question-examples}
+\end{table}
+
+We argue that this application for generative AI in the legal domain is justified and interpretable. 
+Generative AI is very good at rephrasing sentences and expanding concepts (as the results show clearly). 
+By applying this method we remove the burden of generating similar question from the user, 
+so the proposed approach preserves time of the user. On the other hand, since the generated questions 
+might be presented to the user, the process is interpretable at the human level \cite{martinez2023survey}, meaning that
+even though the workings of the neural network cannot be tracked, its outcome can be understood by humans and 
+possible errors might be identified as wrongly generated questions. Once again removal of such invalid questions 
+is a much faster process than their invention by the potential users of the solution.
+
+\subsection{Sentence retrieval}
+
+The next step in the procedure is the retrieval of the relevant pieces of judgments that include answers to the
+generated questions. As explained in the Section \ref{sec:experiments}, since the collection of text we use in our experiments
+is small, compared to other QA dataset, we have decided to use a simplified approach for retrieving the relevant
+passages of the decisions. Instead of first retrieving a subset of the data using a sparse or a dense retriever,
+we have implemented only a cross-encoder, which is typically used for re-scoring the results on a subset of documents.
+In our approach the cross-encoder is run for each generated question and each available passage. 
+
+As the cross-encoder we have used a binary classification model on the top of Albert \cite{lan2019albert} model (from the BERT family
+\cite{devlin2018bert} of encoder-only transformer models). We have used SQuAD dataset \cite{rajpurkar2016squad},
+specifically the second version with unanswerable questions \cite{rajpurkar2018know}. We have implemented
+an indirect method of contrastive learning (i.e. the contrastive goal is not encoded in the loss but in the preparation of
+the  training examples). A typical procedure for SQuAD 2.0, to build a binary classifier judging if the passage 
+contains an answer to the question would be to use the unanswerable questions together with the passages as the 
+negative examples and the answerable questions with their passages as the positive examples. Yet, that would yield
+a highly imbalanced dataset, which does not reflect the distribution of positive and negative question -- passage 
+pairs of the application domain (in SQuAD 2.0 there are 20\% of unanswerable question -- passage pairs, while 
+for the retrieval more than 99\% of passages are irrelevant). 
+
+To resolve that problem we have pre-processed SQuAD 2.0 by splitting each passage into individual sentences and identified
+those sentences that included the whole answer. This is straightforward operation, since SQuAD implements the extractive
+QA paradigm which requires that the answer is directly present in the passage as a sequence of consecutive tokens,
+so the sentence that includes those tokens together with the question is taken as a positive example, while
+all the other sentences from the same passage and that question are treated as the negative examples.
+We call this approach an indirect contrastive learning, since the negative examples will include information 
+which is highly relevant for the question, but they do not include the actual answer. For the unanswerable questions
+we also split the passage into individual sentences and treat all of them as negative examples. As a result we 
+obtain a dataset that includes a high number of negative examples, which are still highly relevant with respect to the 
+question.
+
+\subsection{Passage classification}
+
+\section{Experiments}
+\label{sec:experiments}
+
+\textit{This is a description of the experiments we have conducted -- not the methodology}.
+
+Since this is a preliminary research without a dedicated dataset, we have decided to use
+the data from the GDPRHub\footnote{\url{https://gdprhub.eu}} -- a \url{https://noyb.eu} financed site supported by
+a large group of volunteers. It uses Wikimedia software to provide easy access and editing features for 
+aggregating Data Protection Authorities and national courts' decisions. The software  allows to filter the 
+decisions by the GDPR articles relevant for them (usually the articles that were allegedly breached by some 
+company or an institution). Besides the text of the decision (automatically translated to English) the database
+contains user-created description which contains sections such as: facts, holding, comment and further resources.
+
+In our experiment we have concentrated on the chapter V of GDPR (transfer of the personal data to third countries or 
+international organizations), containing articles 44 to 50. We have downloaded all the decisions available for 
+these articles and extracted the facts and the holding of their English summary. These sections were sentence-split
+using Stanza library \cite{qi2020stanza}.
+
+\section{Conclusion}
+
+TODO: last
+
+The domain of the paper is not clear:
+- Are we the only example based approach to QAs? In the legal domain? (A new QA system paper)
+
+- Are we presenting a new way to create them only? (A new QA creation paper)
+
+We need to get a better understanding of the sota. The latest paper on LQAS: A survey on legal question–answering systems by Jorge Martinez-Gil
+
+He mentions 8 sureys in the general domain which needs to be processed:
+
+[2] O. Kolomiyets, M. Moens, A survey on question answering technology
+from an information retrieval perspective, Inform. Sci. 181 (24) (2011)
+5412–5434, http://dx.doi.org/10.1016/j.ins.2011.07.047.
+[3] M. Wang, A survey of answer extraction techniques in factoid question
+answering, Comput. Linguist. 1 (1) (2006) 1–14.
+[4] K. Höffner, S. Walter, E. Marx, R. Usbeck, J. Lehmann, A.N. Ngomo, Survey
+on challenges of question answering in the semantic web, Semantic Web
+8 (6) (2017) 895–920, http://dx.doi.org/10.3233/SW-160247.
+[5] D. Diefenbach, V. López, K.D. Singh, P. Maret, Core techniques of question
+answering systems over knowledge bases: a survey, Knowl. Inf. Syst. 55
+(3) (2018) 529–569, http://dx.doi.org/10.1007/s10115-017-1100-y.
+[6] W. Franco, C.V.S. Avila, A. Oliveira, G. Maia, A. Brayner, V.M.P. Vidal,
+F. Carvalho, V.M. Pequeno, Ontology-based question answering systems
+over knowledge bases: A survey, in: J. Filipe, M. Smialek, A. Brodsky, S.
+Hammoudi (Eds.), Proceedings of the 22nd International Conference on
+Enterprise Information Systems, ICEIS 2020, Prague, Czech Republic, May
+5-7, 2020, Volume 1, SCITEPRESS, 2020, pp. 532–539, http://dx.doi.org/
+10.5220/0009392205320539.
+J. Martinez-Gil Computer Science Review 48 (2023) 100552
+[7] E. Dimitrakis, K. Sgontzos, Y. Tzitzikas, A survey on question answering
+systems over linked data and documents, J. Intell. Inf. Syst. 55 (2) (2020)
+233–259, http://dx.doi.org/10.1007/s10844-019-00584-7.
+[8] J.W.F. da Silva, A.D.P. Venceslau, J.E. Sales, J.G.R. Maia, V.C.M. Pinheiro,
+V.M.P. Vidal, A short survey on end-to-end simple question answering
+systems, Artif. Intell. Rev. 53 (7) (2020) 5429–5453, http://dx.doi.org/10.
+1007/s10462-020-09826-5.
+[9] A. Rogers, M. Gardner, I. Augenstein, QA dataset explosion: A taxonomy
+of NLP resources for question answering and reading comprehension,
+ACM Comput. Surv. 55 (10) (2023) 197:1–197:45, http://dx.doi.org/10.
+1145/3560260
+
+The main goal of tools according to the COLIEE competition is: Given a decision, automatically extract from cases a sentence which entails it
+
+According to the paper, the main three tasks of LQAS are:
+- Query understanding
+- Source retrieval
+- Answer extraction
+But that most systems follow the tasks differently.
+
+We have a different approach. We start with a concept in a certain context. For example Contractual Clauses in GDPR data transfers. We obtain yes/no questions regarding the concept in different contexts. We then look for sentences in cases which either positively demonstrate the question or negatively.
+
+---
+I wonder if we should not focus on our approach as starting with a concept and context and generating a question and answer at the same time. This seems original and can overcome the problem of matching an answer to a question.
+---
+
+If we do, we can say that we overcome some challenges of current lqas, such as the need to understand the meaning of a question, in order to match an answer. We just match examples.
+
+Problem from survey: The major problem of
+this model is that questions in human language express a well-
+defined information requirement on the one hand. However, they
+also convey more information than an essential list of relevant
+keywords since they represent syntactic and semantic links be-
+tween those keywords. Therefore, solutions work well only to a
+limited extent, i.e., when the questions are simple.
+
+The goal of multiple choice answers is: the goal is to learn a scoring function S(F , z) with a
+normalization parameter z (whereby z or the normalization factor
+is usually used so that the values associated with each answer are
+in the same numerical range) such that the score of the correct
+choice is higher than the score of the other hypotheses and their
+corresponding probabilities.
+
+is it the goal in our approach too?
+
+Table 4 shows 6 different approaches. Are they relevant to our goal? Seems we mainly use co-occurrence? See p.5 for sota in this regards. Where do we stand?
+
+Section 2.4 seems highly relevant. Do we use this approach? Do we overcome its weaknesses?
+
+This seems closest to us and doesnt appear in the sota we have so far: If we restrict ourselves to LQA, one of the most popular ini-
+tiatives is ResPubliQA. This evaluation task was proposed at the
+Cross-Language Evaluation Forum (CLEF) [32,33] a consists of
+given a pool of independent questions in natural language about
+European legislation, proposed systems should return a passage
+(but not an exact response) that answers each question. This ini-
+tiative was a remarkable success. In fact, thanks to the ResPubliQA
+competition, this family of methods has been the subject of
+intensive research during the last decade. (See table 5!)
+
+How is 2.6 relevant?
+
+What we do is 2.7 but i cannot see the mentioned works in our sota.
+
+=======
+
+We claim that example based QA systems (or QE systems?) have adventages over QA systems in the ability to generate the systems, accuracy, volume and also usability. They might be more convenient for a certain type of client. We need to support all such arguments.
+
+Can we state that that our approach is fully explainable according to the definition? (get all three: accuracy, interpretability, and performance)
+
+=======
+
+
+The idea is that the most acurate way to answer legal questions is by showing examples and letting the reader make a decision.
+
+Why QA systems are important in general and in particular for the legal domain. <TODO>
+
+We focus on legal QA systems creation. The sota for creation of QA systems in general and legal ones in particular is <TODO>. In addition, we focus on not answering questions but on giving positive and negative examples. What is the SotA in this direction? Is it similar to some systems in the health domain, as there are some similarities in this sense between health and legal?
+
+What are the challenges? <TODO>
+- Accuracy
+- effort to build
+- relevance to actual users
+
+Our approach is to create fully automatically legal QA datasets of high accuracy.<TODO>. For the current paper, we generated the questions automatically.
+
+Our goal is to make available to the public a website of QA regarding different legal problems, where the questions themselves will be rated by the users (according to number of visits, etc.) and will be easily searchable. Such a website will also enable us to ask the users to input common legal problems, which will form the basis of our dataset.
+
+In this paper we introduce the approach and demonstrate on a small dataset of court case decisions. 
+
+TASKS:
+- what are the different types of QA systems creation and in particular legal ones?
+
+Our approach is not to try a reading comprehension on a text and see what part of it answers a certain open question. But, to ask binary questions and choose texts which demonstrates a situation answered by the question in a positive or a negative way. This approach simulates the way a lawyer would approach a legal abstract problem by finding positive and negative examples and trying to apply them to a specific case at hand. In our approach, a question will associated with several examples and the user would be able to estimate  
+Types of QA systems:
+
+- information retrieval
+- reading comprehension (squad)
+
+Advancements in QA in various domains such as <give examples> shows a great potential of automatically answering questions based on data. In the legal domain, this is less successful because <write reasons>.
+
+In this paper we describe a an approach for generating a legal QA systems by first gathering the legal vocabulary from a legislation, marking the articles it is extracted from, then using chatGPT prompt engineering to create the questions and then using an LLM fine-tuned on court case decisions to find the most relevant groups of sentences in court case decisions which answer the generated questions
+
+We focus on binary questions which can be positively or negatively demonstrated by at most one paragraph in court cases. 
+
+These questions differ from those in existing legal QA datasets as they are not completely answered but gather examples.
+
+The logic behind it is to avoid answering legal questions, which is beyond the capabilities of a machine, but to help both legal professionals and the general public to understand how courts interpret the questions by showing positive and negative examples.
+
+
+
+\section{Related work}
+
+The discussion of related work in question answering was divided into three parts. The first part concerns the most widely
+used QA datasets in general. The second group of datasets are those related specifically to the law domain, while
+the last part discusses the QA datasets available for Polish.
+
+
+
+\subsection{QA in English}
+
+Regarding question answering in English there is a growing number of domain-independent datasets: famous SQuAD
+\cite{rajpurkar2016squad}, WikiQA \cite{yang2015wikiqa}, CNN/DailyMail \cite{hermann2015teaching}, MS MARCO
+\cite{bajaj2016ms}, TriviaQA \cite{joshi2017triviaqa}, Natural Questions (NQ) \cite{kwiatkowski2019natural}, to name just
+the most popular of them.
+
+SQuAD, WikiQA and NQ all use Wikipedia as a reference knowledge base for the answers. These dataset
+differ with respect to the size and the way they were constructed. The questions for SQuAD were provided by humans \cite{rajpurkar2016squad}, but in an artificial setting, when the annotator was given a task to invent a number of questions related to an excerpt of Wikipedia article, provided by the dataset creators. The assumption for the first version of the dataset was that the answer for
+the question have to be present in the snippet. Then for each such question a number of annotators had to select a consecutive sequence of tokens, which constitute the answer for that question. The number of excerpts was more than 500, while the dataset of question-answer pairs (treating multiple answers for the same question as one answer) included more than 100 thousand
+entries. The second version of the dataset (SQuAD 2.0 \cite{rajpurkar2018know}) includes additional 50 thousand questions that didn't have an answer in the provided text. Even though the dataset is very large (more than 100 thousand entries), the fact that there are only 500 excerpts and the fact that the annotators had to invent these questions are the primary factors that limit its usefulness. [TODO A: the last paragraph is not clear. Why is it not useful? How are the arguments relevant to the conclusion?]
+
+WikiQA \cite{yang2015wikiqa}, which preceded SQuAD, used Bing queries as the set of questions and Wikipedia pages as the source for the answers. It includes more than 3 thousand questions which are linked to Wikipedia pages, potentially including the answer. The summary section of the pages were sentence-split, yielding almost 30 thousand sentences. Among them 1473 sentences were selected as the answers to the questions. Comparing to SQuAD, WikiQA has the advantage of having only natural questions, but it is orders of magnitude smaller. Moreover, providing full sentences as answers makes the problem more similar to selective (also known as \textit{passage retrieval} problem), rather than extractive QA task.
+
+Natural Questions \cite{kwiatkowski2019natural} are similar to WikiQA, since they include as questions queries from Google search engine, but they form a much larger dataset. It includes more than 300 thousand training examples (annotated by one person), almost 8 thousand pairs annotated by 5 people, as a development set and  similar number of testing examples annotated by 5 people. Another difference is the answer format: NQ contains long and short answers. Long answers are typically a paragraph of Wikipedia text, while the short answers usually refer to a single entity, thus they
+are very similar to the answers in SQuAD. As a result NQ may be used to train and validate performance on the algorithms both in the selective and extractive QA schemes. [TODO A: various numbers and passages look a bit dubious. 300k annotated by 1 person?]
+
+CNN/Daily mail dataset \cite{hermann2015teaching} differs with the previous datasets by using articles from CNN and Daily Mail, rather than Wikipedia, making the textual material more challenging, since the encyclopedic style of Wikipedia allows to answer many questions just by citing an excerpt. In the case of newspaper articles a good answer requires not only the background knowledge that may be absent from the article, but also the acquaintance with more
+sophisticated style and vocabulary, characteristic for the content that need to be informative, entertaining and succinct at the same time. Yet in the case of that dataset, the QA task was formulated as a cloze task, i.e. the system has to provide the answer as a word that fills a blank in a declarative sentence, e.g. \textit{Producer X will not press charges against Jeremy Clarkson, his lawyer says}.
+
+The authors of the dataset made the task much more challenging by replacing all named entities in the text with abstract identifiers. This prevents the model from utilizing linguistic bias present in language models, since these identifiers are absent from any texts, used to train them. The dataset
+contains 93 thousand articles from CNN and 220 thousand articles from Daily Mail and there are 1 million clozes, generated from the summaries of these articles.
+
+The drawbacks of this dataset in the context of question answering are partly artificial texts (due to replaced entities) as well as the style of the task, which allows to evaluate the models for their linguistic ,,skills'', but since the sentences are declarative, they are not real questions. A smart solution which, has nothing to do with language knowledge, may limit the set of possible answer to the artificial entities, which is much smaller than the total number of words in the text. The set of  possible answer spans is obviously much larger.
+
+An interesting dataset, similar in spirit to NQ is MS MARCO \cite{bajaj2016ms}. It contains more than 1 million questions taken from the Bing queries, almost 9 million passages (not limited to Wikipedia) potentially containing the information necessary to provide the answer and approx. 180 thousand answers provided as full sentences. It differs from NQ by providing abstractive questions and by not limiting itself to the encyclopedic content of Wikipedia.
+
+The last dataset related to open-domain QA in English that we discuss in this section is TriviaQA
+\cite{joshi2017triviaqa}. Its unique feature is the fact that the questions were gathered from trivia websites. The questions were supplemented with webpages and Wikipedia articles, containing the answer to the questions. The authors claim that the questions are more challenging for the question answering system, compared to datasets such as SQuAD, since they usually require reasoning over more than one sentence. The dataset contains 95 thousand question-answer pairs (with 40 thousand unique answers) and 650 thousand question-answer-document triples. At the time of release the best performing
+models reached only 40\% exact match score, which was far below human performance (80\%). The most recent models such as SpanBERT \cite{joshi2020spanbert} reaches 86\% (F1 score) on this dataset.
+
+It is apparent that the size, the variability and the difficulty of the questions characteristic for these dataset is much diversified. But they also have their limitations: all these dataset are available only for English and none of them concentrates on the law domain.
+
+\subsection{QA datasets related to law}
+
+Regarding QA in the domain of law, the number of dataset is much smaller and their variability is much lower. We have identified the following relevant datasets: Competition on Legal Information Extraction/Entailment (COLIEE) including its most recent edition (2021)\footnote{The results for the 2022 edition of the competition are not available yet.}, where tasks 3, 4 and 5 concentrate on Legal Question Answering \cite{rabelo2021summary}, JEC-QA a Chinese legal QA dataset \cite{zhong2019jecqa}, another Chinese dataset called AILA \cite{weiyi2020aila} and a dataset for evaluating legal question answering on private international law \cite{sovrano2021dataset}. There is also a very large dataset constructed by the Westlaw company (it contains approx.  200 thousand QA pairs) \cite{mcelvain2019westsearch}, but it is not publicly available, so it is excluded from this overview.
+
+COLIEE is a competition aimed at fostering the research on algorithms for legal information retrieval, extraction and understanding. The first two tasks during the latest edition of COLIEE (2021) were aimed at case law, while the remaining 3 tasks were all related to question answering \cite{rabelo2021summary}. The aim of Task 3 -- statute law information retrieval, was searching for a subset of Japanese Civil Code Articles, relevant for answering a legal bar exam question.
+The aim of Task 4 -- statute law textual entailment, was to determine if there exist an entailment relationship between a given problem sentence and the article sentence, while the aim of Task 5, was determining the binary answer to the problem sentence, based on any external information, with the articles from Task 3 being the authoritative sources.  Task 3 includes 806 questions in the training set, 81 questions in the tests set and 768 articles in the database. The questions and the articles are provided both in Japanese and in English. The majority of the questions (80\%) has only one relevant article in the whole dataset. The dataset for tasks 4 and 5 have the same questions, but the answers are adjusted to the problem. In both cases the answers provided in the dataset are binary
+(there is/isn't entailment between the sentences, the answer to the question is yes/no).
+
+JEC-QA \cite{zhong2019jecqa} is a dataset collecting questions from National Judicial Examination of China (NJEC) and websites for examination. Passing the exam is necessary to become a legal professional in China and only 10\% of them are successful at this task. The dataset contains more than 26 thousand questions with multiple-choice answers (each containing 4 options). These questions were collected from the official exams (2700 questions) and from websites containing exercises
+preparing for the exam. The dataset also includes the database necessary to answer these questions, which is based on National Unified Legal Professional Qualification Examination Counseling Book and Chinese legal provision (3382 in total). The questions are annotated with additional metadata including the type of the question as well as the reasoning abilities required by the question.
+The dataset follows OpenQA setting \cite{chen2017reading}, i.e. answering a questions requires sophisticated retrieval and reasoning capabilities, since the correct answer might require reading more than one source document, multi-hop reasoning and numerical analysis. The hardness of the problem results in low performance of the general methods for question answering, reaching only 25-29\% correctness for the best models.
+
+The AILA dataset \cite{weiyi2020aila} was constructed by scraping Chinese legal forum, where legal questions are answered by legal professionals. The dataset includes almost 140 thousand QA pairs. According to the article, it seems that the dataset follows selective QA, since the authors evaluated their QA module by measuring Mean Reciprocal Rank and Mean Average Precision -- measures typically used for information retrieval systems assessment. But since the description is very short and gives only one example translated to English, it might be possible that the dataset also allows to train an
+extractive QA system.
+
+The last dataset aimed at question answering in the legal domain is a Dataset for Evaluating Legal Question Answering on Private International Law (PIL) \cite{sovrano2021dataset} (henceforth called PIL dataset). That work is expansion of \cite{sovrano2020legal} -- both of them were based on the following regulations (in English): 
+\begin{enumerate}
+  \item Rome I Regulation EC 593/2008;
+  \item  Rome II Regulation EC 864/2007;
+  \item Brussels I bis Regulation EU 1215/2012.
+\end{enumerate}
+The regulations are defined in the context of international law, making their application a particularly challenging task. Yet the questions -- their interpretation in particular -- were posed as occupying self-contained environment, i.e. abstracting from any other regulations that may interfere with them. The questions were thought up by legal experts and answered by different legal experts as indications of Articles, Recitals or Commission Statements from the indicated
+regulations. As such this dataset follows the selective QA paradigm. The dataset is of very high quality, but it includes only 17 questions altogether.
+
+\bibliographystyle{vancouver}
+\bibliography{ios-book-article}
+
+
+\end{document}
