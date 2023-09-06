@@ -1,0 +1,43 @@
+As it was discussed in Section \ref{sec:sota} there are two dominant approaches 
+based on neural networks that are used to solve the problem of QA:
+\begin{enumerate}
+  \item retrieve and extract/generate answer, e.g. \cite{}, %RAG
+  \item generate an answer using a large language model (LLM) \cite{}. %GPT-3
+\end{enumerate}
+
+Our approach -- LCES -- differs from them, since we:
+\begin{enumerate}
+  \item we do not require that the user poses a question to the system, since the system might generate a question for the user,
+    taking into account the legislation,
+  \item we do not answer the question, but give positive and negative examples, taken directly from the relevant court decisions.
+\end{enumerate}
+Our approach is most similar to the retrieve and generate paradigm, since when searching for relevant information we use
+a cross-encoder (typically used to re-score the results of a sparse or a dense retriever). Yet we also introduce an important
+difference in that respect, by taking individual sentences as the primary means for bearing atomic pieces of information.  
+As a result we resolve the problem of hallucination present in the second mentioned approach, i.e. the approach based on LLMs.
+
+The procedure of finding the relevant examples is divided into the following steps:
+\begin{enumerate}
+  \item Given a legal concept, generate a question that asks if the concept was applicable in a given context,
+    using a first-order language\footnote{The first-order language is used in the Tarski's sense -- to differentiate
+    between the first-order language and the meta-language that is used to speak about the first-order language.}, e.g. 
+    \textit{...} % example
+  \item Having the question generated, we use a binary classification model to find sentences in the court cases that answer the question. 
+    We use the predicted probability not only to sort these sentences, but also to filter sentences below a defined threshold.
+    As a result this step might generate an empty set, meaning that in our corpus there are no relevant court decisions. 
+    This prevents the system from presenting passages that are irrelevant, but also limits the possibility of false
+    classification of the sentences.
+  \item In the last step we extend the sentence to include the preceding and the following sentence forming a three-sentence passage
+    and ask an instruction-following model to judge if the example gives a positive or a negative answer to the generated question.
+    We use that prediction to classify the passage as as positive or a negative example.
+\end{enumerate}
+
+The detailed description of the steps are given in the following sections.
+
+\subsection{Question generation}
+
+
+\subsection{Sentence retrieval}
+
+
+\subsection{Passage classification}
