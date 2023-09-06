@@ -1,0 +1,14 @@
+\textit{This is a description of the experiments we have conducted -- not the methodology}.
+
+Since this is a preliminary research without a dedicated dataset, we have decided to use
+the data from the GDPRHub\footnote{\url{https://gdprhub.eu}} -- a \url{https://noyb.eu} financed site supported by
+a large group of volunteers. It uses Wikimedia software to provide easy access and editing features for 
+aggregating Data Protection Authorities and national courts' decisions. The software  allows to filter the 
+decisions by the GDPR articles relevant for them (usually the articles that were allegedly breached by some 
+company or an institution). Besides the text of the decision (automatically translated to English) the database
+contains user-created description which contains sections such as: facts, holding, comment and further resources.
+
+In our experiment we have concentrated on the chapter V of GDPR (transfer of the personal data to third countries or 
+international organizations), containing articles 44 to 50. We have downloaded all the decisions available for 
+these articles and extracted the facts and the holding of their English summary. These sections were sentence-split
+using Stanza library \cite{qi2020stanza}.
