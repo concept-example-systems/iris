@@ -54,3 +54,32 @@ From the legislation, we have questions such as:
 - is homosexuality a ‘social group’ for the purposes of the Migration Act 1958?
 
 In order to resolve these questions, we first try to figure out the information from the legislation and if not possible, we look at case law. "Case law should assist us to determine the meaning of ‘well-founded fear’ and ‘social group’" (cited from book).
+
+There are 3 methods for looking for case law:
+1. By using search terms 
+2. By starting from a known similar case
+3. By looking on judicial analysis of a certain legislation
+
+We will focus on option 1.
+
+Modern case law search is mainly done by using special tools, such as the ones offered by LexisNexis and Thomson Reuters Westlaw, or by publicly available indexes, such as EUR-Lex\footnote{\url{http://eur-lex.europa.eu}}.
+
+The main search process includes using search terms and filters in order to locate relevant judgements. There are two formats of such judgements, as semi-structured summarized digests (or citations) and as full text. The advantage of the first is the ability to conduct a more relevant search and hopefully obtain a lower number of cases while the second allows you to obtain all relevant cases. The first option also often supports references to similar cases.
+
+If you input in an Australian case law search tool the keywords "well-
+founded fear", together with keywords such as "homosexuality" and "prosecution", many relevant cases are returned, such as "S395 v Minister for Immigration and Multicultural Affairs"\footnote{\url{https://www.icj.org/sogicasebook/appellant-s3952002-v-minister-for-immigration-and-multicultural-affairs-high-court-of-australia-9-december-2003/}}. 
+
+Once a set of relevant cases was identified, the legal professional needs to read the cases, as summaries or digests are not enough.
+
+A reading of the above mentioned case gives the following paragraph: ``the Tribunal had misdirected itself on the issue of discretion and had not properly considered the appellants’ claims that they had a real and well-founded fear of persecution if they returned to Bangladesh. The real question was whether the harm that would be suffered was such that, {\bf by reason of its intensity or duration, the person cannot reasonably be expected to tolerate it}''.
+
+This paragraph and its concluding remark gives a positive example for a high court decision whether the keyword "well-founded fear" holds under the context "homosexuality" and "prosecution" and under the Australian "Migration Act 1958". By using this example, the legal professional can return to her case at hand at determine if the example is similar or not. Clearly, further examples and especially a mix of positive and negative examples would provide the most useful help in determining that.
+
+We argue in this paper that one of the most useful questions for a legal QAS would be to show positive and negative examples of a concept under a certain term. Such systems would need to understand the meaning of the question and would not be optimized for finding examples, thus increasing the chance for error. Stating the above, there are cases when the most useful question to ask is not of the above form.
+
+In the next section, we describe a new type of QASs which is tailored for the task above. A methodology for creating such a system, as well as a simple experiment, are described in sections \ref{sec:method} and \ref{sec:experiments}.
+
+Mention that instead of a concept + context + legislation, we use questions as it allows the reader to determine if the question is relevant to their search.
+
+Concept + legislation => ChatGPT to generate querstions with additional context
+\subsection{Concept-Example Systems (CESs)}
