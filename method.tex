@@ -1,8 +1,8 @@
 As it was discussed in Section \ref{sec:sota} there are two dominant approaches 
 based on neural networks that are used to solve the problem of QA:
 \begin{enumerate}
-  \item retrieve and extract/generate answer, e.g. , %RAG
-  \item generate an answer using a large language model (LLM). %GPT-3
+  \item retrieve and extract/generate answer, e.g. \cite{lewis2020retrieval}, %RAG
+  \item generate an answer using a large language model (LLM), e.g. \cite{brown2020language}. %GPT-3
 \end{enumerate}
 Our approach -- LCES -- differs from them, since:
 \begin{enumerate}
@@ -109,7 +109,7 @@ passages of the decisions. Instead of first retrieving a subset of the data usin
 we have implemented only a cross-encoder, which is typically used for re-scoring the results on a subset of documents.
 In our approach the cross-encoder is run for each generated question and each available passage. 
 
-As the cross-encoder we have used a binary classification model on the top of Albert \cite{lan2019albert} model (from the BERT family
+As the cross-encoder we have used a binary classification model by fine-tuning AlBERT \cite{lan2019albert} model (from the BERT family
 \cite{devlin2018bert} of encoder-only transformer models). We have used SQuAD dataset \cite{rajpurkar2016squad},
 specifically the second version with unanswerable questions \cite{rajpurkar2018know}. We have implemented
 an indirect method of contrastive learning (i.e. the contrastive goal is not encoded in the loss but in the preparation of
@@ -117,18 +117,54 @@ the  training examples). A typical procedure for SQuAD 2.0, to build a binary cl
 contains an answer to the question would be to use the unanswerable questions together with the passages as the 
 negative examples and the answerable questions with their passages as the positive examples. Yet, that would yield
 a highly imbalanced dataset, which does not reflect the distribution of positive and negative question -- passage 
-pairs of the application domain (in SQuAD 2.0 there are 20\% of unanswerable question -- passage pairs, while 
+pairs of the application domain (in SQuAD 2.0 there are 20\% of unanswerable pairs, while 
 for the retrieval more than 99\% of passages are irrelevant). 
 
 To resolve that problem we have pre-processed SQuAD 2.0 by splitting each passage into individual sentences and identified
 those sentences that included the whole answer. This is straightforward operation, since SQuAD implements the extractive
-QA paradigm which requires that the answer is directly present in the passage as a sequence of consecutive tokens,
-so the sentence that includes those tokens together with the question is taken as a positive example, while
-all the other sentences from the same passage and that question are treated as the negative examples.
+QA paradigm which requires that the answer is directly present in the passage as a sequence of consecutive tokens.
+The sentence that includes those tokens together with the question is taken as a positive example, while
+all the other sentences \textbf{from the same passage} and that question are treated as the negative examples.
 We call this approach an indirect contrastive learning, since the negative examples will include information 
 which is highly relevant for the question, but they do not include the actual answer. For the unanswerable questions
 we also split the passage into individual sentences and treat all of them as negative examples. As a result we 
 obtain a dataset that includes a high number of negative examples, which are still highly relevant with respect to the 
 question.
 
+Since the model outputs a probability score for the question -- sentence pair, it is possible to sort the sentences according
+to the decreasing probability of the sentence containing the answer to the question. But since this is a binary classification
+model, by default paris with probability below 0.5 will be judged as not containing the answer. This threshold might be increased
+to obtain a higher accuracy of results. 
+
+Once again the workings of this module are interpretable at the human level for the sentences that were classified as 
+containing the answer, since they might be presented directly to the user and the user might check which question
+yield a positive result for the sentence. Such sentences might be then ignored by the user. However for the negative 
+results there is no way to check if the system has not omitted some relevant results. Yet from practical point of view
+-- assuming the system will produce considerable amount of examples in the next step -- such an 
+omission would not be a problem, since the goal is to provide positive and negative examples of the interpretation of the
+legal concept, rather than retrieve \textbf{all} usages of that concept in the decisions.
+
 \subsection{Passage classification}
+
+As the last stage of processing we classify the sentences as positive or negative examples. Since in the second step
+we process individual sentences, we first expand the context by taking one preceding and one following sentence, in 
+order to provide better understanding for the model which will make the decision. To classify the such extended 
+context into one of the classes we use an instruction following model, in that case Flan-T5 \cite{chung2022scaling}. 
+This is a T5-based model \cite{raffel2020exploring}, fine-tuned to follow instructions on a large group of various
+English datasets. The prompt sent to the model is given in Figure \ref{fig:flan-instruction}.
+
+\begin{figure}[htbp]
+  \texttt{Given the context: '<context>' answer the following question by reasoning step-by-step: <question>} 
+  \caption{The prompt used to ask Flan-T5 for classification of the examples.}
+  \label{fig:flan-instruction}
+\end{figure}
+
+The result of the prompt is an explanation of why the model believes that the answer is either positive or negative.
+It allows to group the examples into positive and negative by checking if the answer contains `yes'. The additional
+outcome is availability of a justification for the answer the model has given. Once again, this makes the model
+interpretable on the human level, since even if the provided judgment is invalid, since the model do not perform 
+a real reasoning, the user is able to assess if the justification is sensible. 
+
+We haven't used ChatGPT in the last step (as in the first step), since the number of queries to the API would incur
+a high cost. Flan-T5 is not as good as ChatGPT, but it's performance is one of the best \cite{chia2023instructeval} 
+among the open-source models that demonstrate the instruction following capability.
