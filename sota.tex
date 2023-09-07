@@ -1,0 +1,22 @@
+\cite{zhong2020building} is an example of a system that utilizes deep learning for factoid
+question answering, following the retrieve-extract paradigm. The authors developed a system
+that is aimed at answering questions related to the Chinese building regulations. 
+The corpus contains the documents from the Chinese law related to buildings. These documents
+are split into passages following the structure of provisions -- each provision is treated 
+as a tree and for each non-leaf node a passage containing the content of parent nodes and all 
+descendant nodes is created.
+
+The retrieval model is based on a sparse representation of the passages -- the authors use TF-IDF 
+\cite{manning1999foundations} vector model for retrieval. Then for top-n returned passages the
+apply a Chinese BERT-like model that was trained on the Chinese Wikipedia and the content of the 
+regulations. The model is fine-tuned on a collection of question-passage-answer triplets, to 
+perform extractive question answering (the answer has to be present literally in the passage).
+The training size of the dataset contains 2500 triplets, while the validation and the testing
+part contain 500 triplets each.
+
+The authors report very high accuracy of the answers (95\% exact match score for factoid questions 
+and 90\% for definitional questions), but this only comprises the answer extraction module. 
+The authors do not provide a similar scores for the complete system, but only report the user 
+evaluation in terms of easy of use, quality of answers and time spent by the user. The overall performance 
+of the system judged by the users is better compared to Baidu search engine and regulation document 
+database (however the last system is judged better in terms of accuracy of the answers).
