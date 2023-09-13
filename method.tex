@@ -1,21 +1,11 @@
-As it was discussed in Section \ref{sec:sota} there are two dominant approaches 
-based on neural networks that are used to solve the problem of QA:
-\begin{enumerate}
-  \item retrieve and extract/generate answer, e.g. \cite{lewis2020retrieval}, %RAG
-  \item generate an answer using a large language model (LLM), e.g. \cite{brown2020language}. %GPT-3
-\end{enumerate}
-Our approach -- LCES -- differs from them, since:
+As discussed in the previous section, LCESs differ from current solutions since:
 \begin{enumerate}
   \item we do not require that the user poses a question to the system, since the system might generate a question for the user,
     taking into account the legislation,
   \item we do not answer the question, but give positive and negative examples, taken directly from the relevant court decisions.
 \end{enumerate}
-Our approach is most similar to the retrieve and generate paradigm, since when searching for relevant information we use
-a cross-encoder (typically used to re-score the results of a sparse or a dense retriever). Yet we also introduce an important
-difference in that respect, by taking individual sentences as the primary means for bearing atomic pieces of information.  
-As a result we resolve the problem of hallucination present in the second mentioned approach, i.e. the approach based on LLMs.
 
-The procedure of finding the relevant examples is divided into the following steps:
+Our methodology for finding the relevant examples can be divided into the following steps:
 \begin{enumerate}
   \item Given a legal concept, generate a question that asks if the concept was applicable in a given context,
     using a first-order language\footnote{The first-order language is used in the Tarski's sense -- to differentiate
@@ -36,95 +26,63 @@ The procedure of finding the relevant examples is divided into the following ste
     We use that prediction to classify the passage as a positive or a negative example.
 \end{enumerate}
 
-It has to be stressed that none of the steps uses a domain-specific (legal) question-answering dataset. We only use an open-domain
-dataset (SQuAD) and general generative models (ChatGPT and Flan-T5). This is a very important feature of our approach,
-since the oder neural systems related to legal question answering are typically trained on legal datasets.
-The detailed description of the procedure is given in the following sections.
+It has to be stressed that none of the steps uses a domain-specific (legal) question-answering dataset. We only use an open-domain dataset (SQuAD) and general generative models (ChatGPT and Flan-T5). This is a very important feature of our approach,
+since the other neural systems related to legal question answering are typically trained on legal datasets.
+
+We follow with a detailed description of the procedure.
 
 \subsection{Question generation}
 
-\textit{Tomer: provide the rationale for the concept selection and the prompt for ChatGPT used to generate the questions.}
+In order to generate questions, we first have to choose relevant concepts. This raises an interesting connection with hybrid AI solutions, as the concepts could be extracted from knowledge representation databases such as legal ontologies. For the purpose of this paper, the authors have read the relevant legal articles and have chosen 10 concepts according to their legal understanding.
 
-We use ChatGPT to generate the questions using the legal concepts as the input. For each legal concept we have generated
-4 specific and 1 general question. In general the number of questions is a parameter of the approach and a higher number
-should yield a better recall of the results. So far we have left the influence of that parameter on the result as well
-as a selection of particular language model for future research.
+In order to generate the questions from the concepts, we have approached chatGPT\footnote{June 22 Version using GPT-4} with the following prompt "For each of the following legal concepts from the GDPR, please give 4 specific and 1 general yes/no questions, which might be discussed by a court."
 
-Since we test our approach on GDPR, we assume that ChatGPT has a good knowledge
-of the relevant legislation, since it should be present in the corpus, the
-system was trained on. As the results show (cf. Table
-\ref{tab:question-examples}), this is a valid assumption, however for a solution
-that is independent from the knowledge of the language model (i.e. taking into
-account some amendments that were applied recently), we could provide the
+In general the number of questions is a parameter of the approach and a higher number
+should yield a better recall of the results. So far we have left the influence of that parameter on the result as well as a selection of particular language model for future research.
+
+Since we test our approach on GDPR, we assume that ChatGPT has a good knowledge of the relevant legislation, because it should be present in the corpus, the system was trained on. As the results show (cf. Table \ref{tab:question-examples}), this is a valid assumption, however for a solution that is independent from the knowledge of the language model (i.e. taking into account some amendments that were applied recently), we could provide the
 relevant provision as a part of the prompt.
 
 \begin{table}[htbp]
   \centering\begin{tabular}{l p{6cm}}
     \hline
     \textbf{Legal concept} & \textbf{Generated question} \\
-    \hline
-Enforceable data subject rights & Were the data subjects informed about their rights regarding their personal data?\\
 \hline
 Effective legal remedies for data subjects & Are there established procedures within the organization for data subjects to seek legal remedies?\\
 \hline
 Legally binding and enforceable instrument & Does the instrument in question meet the criteria for being legally binding under relevant laws?\\
 \hline
-Binding corporate rules & Does the organization have binding corporate rules in place for data protection?\\
-\hline
 Standard data protection clauses & Has the organization implemented Standard Contractual Clauses (SCCs) for data transfers?\\
 \hline
-Approved code of conduct & Has the organization's code of conduct been officially approved by the relevant authority?\\
-\hline
-Approved certification mechanism & Has the organization's certification mechanism been officially approved by the relevant authority?\\
-\hline
-Competent supervisory authority & Has the organization received approvals or guidance from the competent supervisory authority for its data protection practices?\\
-\hline
-Contractual clauses & Does the organization incorporate specific data protection clauses in its contracts with third parties?\\
-\hline
-Administrative arrangements & Does the organization have administrative arrangements in place that include provisions for data subject rights?\\
-\hline
-Consistency mechanism & Does the organization employ a consistency mechanism to ensure uniform data protection practices?\\
-\hline
-
+Standard data protection clauses & Are there mechanisms in place to review and update the standard data protection clauses in response to legal or operational changes?\\
   \end{tabular}
   \caption{Example questions generated by ChatGPT for the legal concepts taken from GDPR.}
   \label{tab:question-examples}
 \end{table}
 
-We argue that this application for generative AI in the legal domain is justified and interpretable. 
-Generative AI is very good at rephrasing sentences and expanding concepts (as the results show clearly). 
-By applying this method we remove the burden of generating similar question from the user, 
-so the proposed approach preserves time of the user. On the other hand, since the generated questions 
-might be presented to the user, the process is interpretable at the human level \cite{martinez2023survey}, meaning that
-even though the workings of the neural network cannot be tracked, its outcome can be understood by humans and 
-possible errors might be identified as wrongly generated questions. Once again removal of such invalid questions 
+The process of automatically generating questions from legal concepts meets the three properties: accuracy, interpretability and performance.
+Accuracy and interpretability hold since even though the workings of the neural network cannot be tracked, its outcome can be understood by humans and possible errors might be identified as wrongly generated questions. In addition, the removal of such invalid questions 
 is a much faster process than their invention by the potential users of the solution.
+Lastly, performance holds since the process is fully automatic and unsupervised.
 
 \subsection{Sentence retrieval}
 
-The next step in the procedure is the retrieval of the relevant pieces of judgments that include answers to the
-generated questions. As explained in the Section \ref{sec:experiments}, since the collection of text we use in our experiments
-is small, compared to other QA dataset, we have decided to use a simplified approach for retrieving the relevant
-passages of the decisions. Instead of first retrieving a subset of the data using a sparse or a dense retriever,
-we have implemented only a cross-encoder, which is typically used for re-scoring the results on a subset of documents.
-In our approach the cross-encoder is run for each generated question and each available passage. 
+The main step of the procedure is the retrieval of the relevant pieces of judgments that include answers to the
+generated questions. As explained later in the Section \ref{sec:experiments}, due to the fact that the collection of text we use in our experiments
+is relatively small, we have decided to use a simplified approach for retrieving the relevant passages of the decisions. 
+Instead of first retrieving a subset of the data using a sparse or a dense retriever, we have implemented only a cross-encoder, which is typically used for re-scoring the results on a subset of documents.
+In our approach the cross-encoder is run for each combination of generated question and available passage. 
 
-As the cross-encoder we have used a binary classification model by fine-tuning AlBERT \cite{lan2019albert} model (from the BERT family
-\cite{devlin2018bert} of encoder-only transformer models). We have used SQuAD dataset \cite{rajpurkar2016squad},
-specifically the second version with unanswerable questions \cite{rajpurkar2018know}. We have implemented
-an indirect method of contrastive learning (i.e. the contrastive goal is not encoded in the loss but in the preparation of
-the  training examples). A typical procedure for SQuAD 2.0, to build a binary classifier judging if the passage 
-contains an answer to the question would be to use the unanswerable questions together with the passages as the 
-negative examples and the answerable questions with their passages as the positive examples. Yet, that would yield
-a highly imbalanced dataset, which does not reflect the distribution of positive and negative question -- passage 
-pairs of the application domain (in SQuAD 2.0 there are 20\% of unanswerable pairs, while 
-for the retrieval more than 99\% of passages are irrelevant). 
+Our goal for the cross-encoder is to score the likelihood that a certain passage contains information relating to the question.
+For this purpose, we are using a binary classification model by fine-tuning AlBERT \cite{lan2019albert} model (from the BERT family
+\cite{devlin2018bert} of encoder-only transformer models), fine-tuned with the SQuAD 2.0 dataset \cite{rajpurkar2018know}.
 
-To resolve that problem we have pre-processed SQuAD 2.0 by splitting each passage into individual sentences and identified
-those sentences that included the whole answer. This is straightforward operation, since SQuAD implements the extractive
-QA paradigm which requires that the answer is directly present in the passage as a sequence of consecutive tokens.
-The sentence that includes those tokens together with the question is taken as a positive example, while
-all the other sentences \textbf{from the same passage} and that question are treated as the negative examples.
+We had to adapt the dataset for the task at hand, as in SQuAD there are only about 20\% of unanswerable pairs. While in our task, more than 99\% of passages are irrelevant. This difference affects the balance and accuracy of the classification algorithm.
+
+To resolve that problem we have pre-processed SQuAD 2.0 by splitting each passage into individual sentences and identifying
+those sentences that included the whole answer. 
+The sentence that includes the answer together with the question is taken as a positive example, while
+all the other sentences \textbf{from the same passage} are treated as the negative examples for the same question.
 We call this approach an indirect contrastive learning, since the negative examples will include information 
 which is highly relevant for the question, but they do not include the actual answer. For the unanswerable questions
 we also split the passage into individual sentences and treat all of them as negative examples. As a result we 
@@ -133,12 +91,11 @@ question.
 
 Since the model outputs a probability score for the question -- sentence pair, it is possible to sort the sentences according
 to the decreasing probability of the sentence containing the answer to the question. But since this is a binary classification
-model, by default paris with probability below 0.5 will be judged as not containing the answer. This threshold might be increased
-to obtain a higher accuracy of results. 
+model, by default pairs with probability below 0.5 will be judged as not containing the answer. This threshold might be increased
+to obtain a higher accuracy of results, as can be seen in Sec. \ref{sec:experiments}. 
 
-Once again the workings of this module are interpretable at the human level for the sentences that were classified as 
-containing the answer, since they might be presented directly to the user and the user might check which question
-yield a positive result for the sentence. Such sentences might be then ignored by the user. However for the negative 
+Once again, the model meets the three required properties. The model is interpretable at the human level for the sentences that were classified as containing the answer, since the answers are identical and contain references to the original phrases in judgements.
+However for the negative 
 results there is no way to check if the system has not omitted some relevant results. Yet from practical point of view
 -- assuming the system will produce considerable amount of examples in the next step -- such an 
 omission would not be a problem, since the goal is to provide positive and negative examples of the interpretation of the
@@ -146,10 +103,11 @@ legal concept, rather than retrieve \textbf{all} usages of that concept in the d
 
 \subsection{Passage classification}
 
-As the last stage of processing we classify the sentences as positive or negative examples. Since in the second step
+As the last stage of the processing we classify the matched sentences as positive or negative examples. Since in the second step
 we process individual sentences, we first expand the context by taking one preceding and one following sentence, in 
-order to provide better understanding for the model which will make the decision. To classify the such extended 
-context into one of the classes we use an instruction following model, in that case Flan-T5 \cite{chung2022scaling}. 
+order to provide better understanding for the model which will make the decision, as well as to provide the user with more information about the answer. It should be noted that more sophisticated approaches which extract more precise sentences is left as future work.
+To classify the extended 
+context into one of the two classes we use an instruction following model, in that case Flan-T5 \cite{chung2022scaling}. 
 This is a T5-based model \cite{raffel2020exploring}, fine-tuned to follow instructions on a large group of various
 English datasets. The prompt sent to the model is given in Figure \ref{fig:flan-instruction}.
 
@@ -162,8 +120,7 @@ English datasets. The prompt sent to the model is given in Figure \ref{fig:flan-
 The result of the prompt is an explanation of why the model believes that the answer is either positive or negative.
 It allows to group the examples into positive and negative by checking if the answer contains `yes'. The additional
 outcome is availability of a justification for the answer the model has given. Once again, this makes the model
-interpretable on the human level, since even if the provided judgment is invalid, since the model do not perform 
-a real reasoning, the user is able to assess if the justification is sensible. 
+interpretable on the human level, since the user is able to assess if the justification is sensible and eliminate inaccurate results. 
 
 We haven't used ChatGPT in the last step (as in the first step), since the number of queries to the API would incur
 a high cost. Flan-T5 is not as good as ChatGPT, but it's performance is one of the best \cite{chia2023instructeval} 
