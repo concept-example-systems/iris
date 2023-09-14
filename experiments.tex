@@ -59,4 +59,8 @@ decision threshold works as expected. As a result we were able to identify 0.65 
 experiment. There were 18 such sentences (with 2 duplicates, obtained for similar questions) with 4 false positives (77.78\% precision).
 There were also 4 false negatives (identified among the top-5 results below 0.65 threshold), giving 77.78\% recall and the same F1-score. 
 The results obtained by our model are on par with the state-of-the-art neural passage retrieval model -- DPR \cite{karpukhin2020dense},
-which obtains 72.24 accuracy on top-5 results
+which obtains 72.24 accuracy on top-5 results tested on the Natural Questions dataset \cite{kwiatkowski2019natural}. Obviously, 
+our results should be treated with a grain of salt, since we were biased towards positive assessment of our approach and the 
+datasets is orders of magnitude smaller, yet they still show that the approach produces meaningful preliminary results.
+
+As the last step we have provided all results with probability > 0.65 and the 4 remaining results below that threshold 
