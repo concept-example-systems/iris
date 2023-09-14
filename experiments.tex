@@ -1,5 +1,3 @@
-\textit{This is a description of the experiments we have conducted -- not the methodology}.
-
 Since this is a preliminary research without a dedicated dataset, we have decided to use
 the data from the GDPRHub\footnote{\url{https://gdprhub.eu}} -- a \url{https://noyb.eu} financed site supported by
 a large group of volunteers. It uses Wikimedia software to provide easy access and editing features for 
@@ -9,6 +7,45 @@ company or an institution). Besides the text of the decision (automatically tran
 contains user-created description which contains sections such as: facts, holding, comment and further resources.
 
 In our experiment we have concentrated on the chapter V of GDPR (transfer of the personal data to third countries or 
-international organizations), containing articles 44 to 50. We have downloaded all the decisions available for 
-these articles and extracted the facts and the holding of their English summary. These sections were sentence-split
-using Stanza library \cite{qi2020stanza}.
+international organizations), concentrating on articles 44 to 46. We have downloaded all the decisions available for 
+these articles (81 decisions in total, 47 unique decisions) and extracted the facts and the holding of their English 
+summary. These sections were sentence-split using the Stanza library \cite{qi2020stanza}, yielding 1201 sentences
+of which 1140 were unique. 
+
+By analyzing the selected GDRP articles, we have selected 11 legal concepts that were the most relevant for them:
+\textit{Enforceable data subject rights}, \textit{Effective legal remedies for data subjects}, 
+\textit{Legally binding and enforceable instrument},
+\textit{Binding corporate rules}, \textit{Standard data protection clauses}, \textit{Approved code of conduct},
+\textit{Approved certification mechanism}, \textit{Competent supervisory authority}, \textit{Contractual clauses},
+\textit{Administrative arrangements}, \textit{Consistency mechanism}. For each concept we have asked ChatGPT 
+to generate 4 specific and one general question related to the relevant legislation. Some examples of these
+questions are given in Table \ref{tab:question-examples}.
+
+For training the sentence retrieval module we have processed all SQuAD v.2 \cite{rajpurkar2018know} contexts applying Stanza 
+library \cite{qi2020stanza}. We have followed the original split of the dataset into training and validation parts.
+The procedure gave more than 650 thousand training examples and more than 63 thousand validation examples. There were 87 thousand
+positive examples in the training set (13\%) and almost 6 thousand positive examples in the validation set (9.5\%).
+We have fine-tuned two models on the data: BERT large uncased \cite{devlin2018bert} (\texttt{bert-large}) and 
+Albert XXL v.1 \cite{lan2019albert} (\texttt{albert-xxl}). The results of the training are given in Table \ref{tab:bert-albert}.
+
+\begin{table}[htbp]
+    \centering\begin{tabular}{l r r r}
+        \hline
+        \textbf{Model} & \textbf{Accuracy} & \textbf{F1-score} & \textbf{Steps} \\
+        \hline
+        \texttt{bert-large} & 95.77 & 78.15 & 50 000 \\
+        \hline
+        \texttt{albert-xxl} & \textbf{97.05} & \textbf{84.14} & 5 000\\
+        \hline
+    \end{tabular}
+    \caption{The results of the training BERT large uncased and Albert XXL on the sentence-split SQuAD dataset.}
+    \label{tab:bert-albert}
+\end{table}
+
+On the validation set \texttt{bert-large} gave results much worse than \texttt{albert-xxl}, even though it was trained 10-times longer 
+(in terms of the number of steps, not the wall clock time). As a result we have decided to use the fine-tuned \texttt{albert-xxl} 
+in the following experiments. To check if the model is behaving according to our expectation, we have asked several questions,
+to see if the results are meaningful. For instance, for the question: \textit{Does licensing software for processing personal data 
+makes the company a data processor?} the model found a sentence: \textit{The EU subsidiary of the American corporation Microsoft, 
+established in Ireland, has access to personal data on the Hub as it licenses the software necessary to operate it (data processor).}
+and assigned 78.38\% probability, that this sentence contains the answer to the question.
