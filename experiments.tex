@@ -63,4 +63,22 @@ which obtains 72.24 accuracy on top-5 results tested on the Natural Questions da
 our results should be treated with a grain of salt, since we were biased towards positive assessment of our approach and the 
 datasets is orders of magnitude smaller, yet they still show that the approach produces meaningful preliminary results.
 
-As the last step we have provided all results with probability > 0.65 and the 4 remaining results below that threshold 
+As the last step we have provided all results with probability above 0.65 and the 4 remaining positive results below that score
+to the Flan-T5-large model \cite{wei2021finetuned,raffel2020exploring}, to obtain an answer if the example is positive or negative
+with respect to the given question. The sentences were extended with one preceding and one following sentence, to form a richer context.
+We have manually reviewed the answers provided by the model. Out of 32 analyzed examples (including those  
+that were previously judged invalid), 18 (\textbf{56.25\%}) were correct (this result included 2 duplicates) and 14 were incorrect (this set
+also included 2 duplicates). 
+
+As an example for the concept: \textit{Legally binding and enforceable
+instrument} a following question was generated: \textit{Does the instrument in
+question meet the criteria for being legally binding under relevant laws?}
+In the GDPRHub corpus the model found a sentence, which after an expansion formed
+the following example: \textit{In its privacy policy the controller simply
+informed consumers about data transfers to third parties and countries, without
+any further legal effect.  \textbf{This document did not constitute a legally binding
+contract offered to customers by the controller, as the Consumer Center
+suggested.} The court also held that the Consumer Center's claim with regard to
+the cookie banners was unfounded.} The Flan T5 model judged simply that the
+answer is \textit{no}, so this context would be presented to the user as a
+negative example.
