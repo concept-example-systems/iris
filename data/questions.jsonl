@@ -1,0 +1,65 @@
+{"id": 1, "concept": "Enforceable data subject rights", "question": "Were the data subjects informed about their rights regarding their personal data?"}
+{"id": 2, "concept": "Enforceable data subject rights", "question": "Has the organization provided a direct avenue for data subjects to enforce their rights?"}
+{"id": 3, "concept": "Enforceable data subject rights", "question": "Were any requests from data subjects to access or rectify their data denied without valid reasoning?"}
+{"id": 4, "concept": "Enforceable data subject rights", "question": "Has the organization implemented measures to ensure timely response to data subject rights' requests?"}
+{"id": 5, "concept": "Enforceable data subject rights", "question": "Are there any recorded incidents where data subject rights were violated?"}
+
+{"id": 6, "concept": "Effective legal remedies for data subjects", "question": "Are there established procedures within the organization for data subjects to seek legal remedies?"}
+{"id": 7, "concept": "Effective legal remedies for data subjects", "question": "Were any data subjects denied the right to legal remedies within stipulated time frames?"}
+{"id": 8, "concept": "Effective legal remedies for data subjects", "question": "Has the organization ever been found non-compliant with providing the promised legal remedies?"}
+{"id": 9, "concept": "Effective legal remedies for data subjects", "question": "Are the legal remedies clearly communicated to data subjects at the point of data collection?"}
+{"id": 10, "concept": "Effective legal remedies for data subjects", "question": "Is there a dedicated team or individual responsible for overseeing and ensuring effective legal remedies for data subjects?"}
+
+{"id": 11, "concept": "Legally binding and enforceable instrument", "question": "Does the instrument in question meet the criteria for being legally binding under relevant laws?"}
+{"id": 12, "concept": "Legally binding and enforceable instrument", "question": "Is the instrument enforceable in the jurisdictions in which it operates?"}
+{"id": 13, "concept": "Legally binding and enforceable instrument", "question": "Were all parties involved in the instrument's formation aware of its legally binding nature?"}
+{"id": 14, "concept": "Legally binding and enforceable instrument", "question": "Has the instrument ever been challenged in court for its enforceability?"}
+{"id": 15, "concept": "Legally binding and enforceable instrument", "question": "Are there procedures in place to review and update the instrument as required by changing laws or circumstances?"}
+
+{"id": 16, "concept": "Binding corporate rules", "question": "Does the organization have binding corporate rules in place for data protection?"}
+{"id": 17, "concept": "Binding corporate rules", "question": "Have these rules been approved by the competent supervisory authority?"}
+{"id": 18, "concept": "Binding corporate rules", "question": "Are all data transfers within the corporate group conducted in accordance with these binding corporate rules?"}
+{"id": 19, "concept": "Binding corporate rules", "question": "Have there been any instances where the binding corporate rules were violated?"}
+{"id": 20, "concept": "Binding corporate rules", "question": "Are employees and relevant stakeholders regularly trained on the binding corporate rules?"}
+
+{"id": 21, "concept": "Standard data protection clauses", "question": "Has the organization implemented Standard Contractual Clauses (SCCs) for data transfers?"}
+{"id": 22, "concept": "Standard data protection clauses", "question": "Do these clauses align with the latest requirements set by the competent authority?"}
+{"id": 23, "concept": "Standard data protection clauses", "question": "Are all relevant parties made aware of these clauses during contractual negotiations?"}
+{"id": 24, "concept": "Standard data protection clauses", "question": "Have there been instances where data transfers occurred without these clauses?"}
+{"id": 25, "concept": "Standard data protection clauses", "question": "Are there mechanisms in place to review and update the standard data protection clauses in response to legal or operational changes?"}
+
+{"id": 26, "concept": "Approved code of conduct", "question": "Has the organization's code of conduct been officially approved by the relevant authority?"}
+{"id": 27, "concept": "Approved code of conduct", "question": "Is the approved code of conduct consistently applied across all operations of the organization?"}
+{"id": 28, "concept": "Approved code of conduct", "question": "Are employees and relevant stakeholders trained on the approved code of conduct?"}
+{"id": 29, "concept": "Approved code of conduct", "question": "Have there been any recorded violations of the approved code of conduct?"}
+{"id": 30, "concept": "Approved code of conduct", "question": "Is there a regular review mechanism in place for the approved code of conduct?"}
+
+{"id": 31, "concept": "Approved certification mechanism", "question": "Has the organization's certification mechanism been officially approved by the relevant authority?"}
+{"id": 32, "concept": "Approved certification mechanism", "question": "Is this certification mechanism applied in compliance with the stipulated requirements?"}
+{"id": 33, "concept": "Approved certification mechanism", "question": "Are there any instances where the approved certification mechanism was not adhered to?"}
+{"id": 34, "concept": "Approved certification mechanism", "question": "Does the organization regularly review and update its certification mechanism?"}
+{"id": 35, "concept": "Approved certification mechanism", "question": "Are the relevant parties within the organization aware of the implications and requirements of the approved certification mechanism?"}
+
+{"id": 36, "concept": "Competent supervisory authority", "question": "Has the organization received approvals or guidance from the competent supervisory authority for its data protection practices?"}
+{"id": 37, "concept": "Competent supervisory authority", "question": "Are there any recorded instances of disagreements or conflicts with the competent supervisory authority?"}
+{"id": 38, "concept": "Competent supervisory authority", "question": "Does the organization regularly engage with the competent supervisory authority for updates and compliance checks?"}
+{"id": 39, "concept": "Competent supervisory authority", "question": "Has the competent supervisory authority ever mandated corrective actions for the organization?"}
+{"id": 40, "concept": "Competent supervisory authority", "question": "Is there a dedicated point of contact within the organization for liaising with the competent supervisory authority?"}
+
+{"id": 41, "concept": "Contractual clauses", "question": "Does the organization incorporate specific data protection clauses in its contracts with third parties?"}
+{"id": 42, "concept": "Contractual clauses", "question": "Are these contractual clauses in compliance with the requirements of relevant data protection laws?"}
+{"id": 43, "concept": "Contractual clauses", "question": "Have there been any disputes or issues arising from these contractual clauses?"}
+{"id": 44, "concept": "Contractual clauses", "question": "Does the organization review and update its contractual clauses in response to changes in data protection laws or business practices?"}
+{"id": 45, "concept": "Contractual clauses", "question": "Are all relevant stakeholders within the organization made aware of these contractual clauses and their implications?"}
+
+{"id": 46, "concept": "Administrative arrangements", "question": "Does the organization have administrative arrangements in place that include provisions for data subject rights?"}
+{"id": 47, "concept": "Administrative arrangements", "question": "Are these administrative arrangements consistent with data protection standards?"}
+{"id": 48, "concept": "Administrative arrangements", "question": "Has there been any instance where the stipulations of the administrative arrangements were not met?"}
+{"id": 49, "concept": "Administrative arrangements", "question": "Are these administrative arrangements regularly reviewed for compliance and efficacy?"}
+{"id": 50, "concept": "Administrative arrangements", "question": "Do these administrative arrangements provide clear channels for data subjects to enforce their rights?"}
+
+{"id": 51, "concept": "Consistency mechanism", "question": "Does the organization employ a consistency mechanism to ensure uniform data protection practices?"}
+{"id": 52, "concept": "Consistency mechanism", "question": "Has this consistency mechanism been reviewed and approved by relevant authorities?"}
+{"id": 53, "concept": "Consistency mechanism", "question": "Are there checks in place to ensure consistent application of data protection measures across the organization?"}
+{"id": 54, "concept": "Consistency mechanism", "question": "Have there been instances identified where there was a lack of consistency in data protection practices?"}
+{"id": 55, "concept": "Consistency mechanism", "question": "Are regular reviews conducted to update and maintain the consistency mechanism?"}
