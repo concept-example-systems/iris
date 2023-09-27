@@ -2,4 +2,12 @@ In this paper we introduced a sub-system of QAS and discussed its merits and a p
 
 The work introduced in this paper is an initial work towards high-quality CESs creation. As such, there are numerous ways to optimize the process, which we consider as future work. Due to lack of space, we mention but a few of them next.
 
-Questions are generated using LLMs fine-tuned on the same legal datasets which are used to identify examples.
+In the paper we have used a subjective and biased method in order to evaluate the relationship between the score provided by our model and the actual relevance of examples to the questions. We plan on conducting an evaluation with the help of law students.
+
+Another form of improvement would be the fine-tuning of pre-trained models with legal datasets for the purpose of sentence extraction.
+
+We also plan on generating better and more numerous questions for each concept. Either via improving the prompt, using LLMs fine-tuned specifically on legal data or by using an entirely different approach.
+
+Similarly, the selection of the relevant context for each answer (currently fixed on the preceding and following sentences) can be much improved.
+
+Lastly, we would like to apply the method on a much larger set of relevant court case judgements. For example by using the one provided by \url{case.law}.

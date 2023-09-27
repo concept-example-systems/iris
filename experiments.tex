@@ -1,37 +1,17 @@
-Since this is a preliminary research without a dedicated dataset, we have decided to use the data from the GDPRHub\footnote{\url{https://gdprhub.eu}} -- a \url{https://noyb.eu} financed site supported by
-a large group of volunteers. It uses Wikimedia software to provide easy access and editing features for 
-aggregating Data Protection Authorities and national courts' decisions. The software  allows to filter the 
-decisions by the GDPR articles relevant for them (usually the articles that were allegedly breached by some 
-company or an institution). Besides the text of the decision (automatically translated to English) the database
-contains user-created description which contains sections such as: facts, holding, comment and further resources.
+The aim of the experiment in this section is to give a minimal validation of the methodology presented in the previous section. We are currently planning a more substantial experiment which will take place as part of a graduate course.
 
-In our experiment we have concentrated on the chapter V of GDPR (transfer of the personal data to third countries or 
-international organizations), concentrating on articles 44 to 46. We have downloaded all the decisions available for 
-these articles (81 decisions in total, 47 unique decisions) and extracted the facts and the holding of their English 
-summary. These sections were sentence-split using the Stanza library \cite{qi2020stanza}, yielding 1201 sentences
-of which 1140 were unique. 
-
-By analyzing the selected GDRP articles, we have selected 11 legal concepts that were the most relevant for them:
-\textit{Enforceable data subject rights}, \textit{Effective legal remedies for data subjects}, 
-\textit{Legally binding and enforceable instrument},
-\textit{Binding corporate rules}, \textit{Standard data protection clauses}, \textit{Approved code of conduct},
-\textit{Approved certification mechanism}, \textit{Competent supervisory authority}, \textit{Contractual clauses},
-\textit{Administrative arrangements}, \textit{Consistency mechanism}. For each concept we have asked ChatGPT 
-to generate 4 specific and one general question related to the relevant legislation. Some examples of these
-questions are given in Table \ref{tab:question-examples}.
-
-For training the sentence retrieval module we have processed all SQuAD v.2 \cite{rajpurkar2018know} contexts applying Stanza 
-library \cite{qi2020stanza}. We have followed the original split of the dataset into training and validation parts.
+In Sec. \ref{sec:method}, we have described the generation of 55 questions (cf. Table \ref{tab:question-examples}). We now proceed with the description of the experiment.
+For training the sentence retrieval module we have used SQuAD v.2 \cite{rajpurkar2018know} sentence-split by the Stanza 
+library \cite{qi2020stanza}. 
 The procedure gave more than 650 thousand training examples and more than 63 thousand validation examples. There were 87 thousand
-positive examples in the training set (13\%) and almost 6 thousand positive examples in the validation set (9.5\%).
+positive examples (see Sec. \ref{sec:method}) in the training set (13\%) and almost 6 thousand positive examples in the validation set (9.5\%).
 We have fine-tuned two models on the data: BERT large uncased \cite{devlin2018bert} (\texttt{bert-large}) and 
 Albert XXL v.1 \cite{lan2019albert} (\texttt{albert-xxl}). The results of the training are given in Table \ref{tab:bert-albert}.
-The reported time of training is for 4 instances of A100 40GB NVIDIA GPU.
 
 \begin{table}[htbp]
     \centering\begin{tabular}{l r r r r}
         \hline
-        \textbf{Model} & \textbf{Accuracy} & \textbf{F1-score} & \textbf{Steps} & \textbf{Time} \\
+        \textbf{Model} & \textbf{Accuracy} & \textbf{F1-score} & \textbf{Steps} & \textbf{Time\footnote{Using 4 instances of A100 40GB NVIDIA GPU}} \\
         \hline
         \texttt{bert-large} & 95.77 & 78.15 & 50 000 & 20h \\
         \hline
@@ -42,44 +22,49 @@ The reported time of training is for 4 instances of A100 40GB NVIDIA GPU.
     \label{tab:bert-albert}
 \end{table}
 
-On the validation set \texttt{bert-large} gave results much worse than \texttt{albert-xxl}, even though it was trained 10-times longer 
+Validating the models on the testing data, we have found that \texttt{bert-large} gave results much worse than \texttt{albert-xxl}, even though it was trained 10-times longer 
 (in terms of the number of steps, not the wall clock time; the total training time for Albert is 4h longer). 
 As a result we have decided to use the fine-tuned \texttt{albert-xxl} 
-in the following experiments. To check if the model is behaving according to our expectation, we have asked several questions,
-to see if the results are meaningful. For instance, for the question: \textit{Does licensing software for processing personal data 
-makes the company a data processor?} the model found a sentence: \textit{The EU subsidiary of the American corporation Microsoft, 
-established in Ireland, has access to personal data on the Hub as it licenses the software necessary to operate it (data processor).}
-and assigned 78.38\% probability, that this sentence contains the answer to the question.
+in the following experiment. 
 
-Having the dataset of sentences from GDPRHub, 55 questions generated by ChatGPT and the classification model described above,
-we have applied the model on the questions and all sentences from the GDPRHub. For each question we have manually inspected top-5 results
+As a source for GDPR related court case decisions, we have decided to use data from GDPRHub\footnote{\url{https://gdprhub.eu}} -- a \url{noyb.eu} financed site supported by
+a large group of volunteers, who standarize and format European courts' decisions. Besides the text of the decision (automatically translated into English) the database
+contains user-created description which includes sections such as: facts, holding, comment and further resources.
+
+Using GDPRHub ability to filter cases according to cited articles, we have downloaded all the decisions available for articles 44-46 (81 decisions in total, 47 unique decisions) and extracted the facts and the holdings of their English 
+summary. These sections were sentence-split using the Stanza library \cite{qi2020stanza}, yielding 1201 sentences
+of which 1140 were unique. 
+
+We have then applied our model for automatically ranking pairs of a question (among the 55 generated by ChatGPT) and sentences in the processed court cases.
+For each question, we have manually inspected the top 5 results
 produced by the classification model, even for cases when the model yielded probability below 0.5, in order to see if the default
 decision threshold works as expected. As a result we were able to identify 0.65 as the optimal (equal error rate) threshold for our 
 experiment. There were 18 such sentences (with 2 duplicates, obtained for similar questions) with 4 false positives (77.78\% precision).
-There were also 4 false negatives (identified among the top-5 results below 0.65 threshold), giving 77.78\% recall and the same F1-score. 
+There were also 4 false negatives (identified among the top 5 results below 0.65 threshold), giving 77.78\% recall and the same F1-score. 
 The results obtained by our model are on par with the state-of-the-art neural passage retrieval model -- DPR \cite{karpukhin2020dense},
-which obtains 72.24 accuracy on top-5 results tested on the Natural Questions dataset \cite{kwiatkowski2019natural}. Obviously, 
+which obtains 72.24 accuracy on the top 5 results tested on the Natural Questions dataset \cite{kwiatkowski2019natural}. Obviously, 
 our results should be treated with a grain of salt, since we were biased towards positive assessment of our approach and the 
-datasets is orders of magnitude smaller, yet they still show that the approach produces meaningful preliminary results.
+dataset is orders of magnitude smaller, yet they still show that the approach produces meaningful preliminary results.
 
-\textit{TODO Tomer: write that the above experiment is for sanity check and that a comprehensive experiment will take place later (with Tereza?)}
-
-As the last step we have provided all results with probability above 0.65 and the 4 remaining positive results below that score
+For the last step, we have provided all results with probability above 0.65 and the 4 remaining positive results below that score
 to the Flan-T5-large model \cite{wei2021finetuned,raffel2020exploring}, to obtain an answer if the example is positive or negative
 with respect to the given question. The sentences were extended with one preceding and one following sentence, to form a richer context.
 We have manually reviewed the answers provided by the model. Out of 32 analyzed examples (including those  
 that were previously judged invalid), 18 (\textbf{56.25\%}) were correct (this result included 2 duplicates) and 14 were incorrect (this set
-also included 2 duplicates). 
+also included 2 duplicates). The obtained result is very similar to the state-of-the-art QA system -- Dense Passage Retriever,
+which -- depending on the employed dataset -- for the end-to-end evaluation yields 35.8 -- 57.9 accuracy. We claim that this 
+supports our claim that the presented approach yields accurate results to the level achievable by the best QA systems 
+available currently, but at the same time, enjoys performance and interpretability, which allows users to easily filter out false results.
 
-As an example for the concept: \textit{Legally binding and enforceable
-instrument} a following question was generated: \textit{Does the instrument in
+The following example shows the result for the concept: \textit{Legally binding and enforceable instrument}. The entire data and results described in this paper can be found on Github\footnote{\url{https://github.com/apohllo/jurix-2023}}.
+Among others, ChatGTP generated a following question for that concept: \textit{Does the instrument in
 question meet the criteria for being legally binding under relevant laws?}
-In the GDPRHub corpus the model found a sentence, which after an expansion formed
+In the GDPRHub corpus the \texttt{albert-xxl} model found a sentence, which after an expansion formed
 the following example: \textit{In its privacy policy the controller simply
 informed consumers about data transfers to third parties and countries, without
 any further legal effect.  \textbf{This document did not constitute a legally binding
 contract offered to customers by the controller, as the Consumer Center
 suggested.} The court also held that the Consumer Center's claim with regard to
-the cookie banners was unfounded.} The Flan T5 model judged simply that the
+the cookie banners was unfounded.} In the last step, the Flan T5 model judged that the
 answer is \textit{no}, so this context would be presented to the user as a
 negative example.
