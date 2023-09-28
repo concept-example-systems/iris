@@ -30,8 +30,6 @@ The data is placed in the `data` directory. It contains the following files:
 
 4. `Analysis.docx` - the manual analysis of the obtained results.
 
-
-
 # Code
 
-work-in-progress
+The code of the experiment is recorded as a [Jupyter notebook](legal-concepts.ipynb)
