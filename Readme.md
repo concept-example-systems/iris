@@ -3,6 +3,10 @@
 This repo contains the code and the data for the paper: "Giving Examples Instead of Answering Questions: 
 Introducing Legal Concept-Example Systems".
 
+# Code
+
+The whole code of the experiment is recorded as a [Jupyter notebook](legal-concepts.ipynb) and will allow you to recreate the experiment.
+
 # Data
 
 The data is placed in the `data` directory. It contains the following files:
@@ -29,7 +33,3 @@ The data is placed in the `data` directory. It contains the following files:
     * `answer` - the answer given by the model.
 
 4. `Analysis.docx` - the manual analysis of the obtained results.
-
-# Code
-
-The code of the experiment is recorded as a [Jupyter notebook](legal-concepts.ipynb)
